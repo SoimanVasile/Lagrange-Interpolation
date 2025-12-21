@@ -1,54 +1,59 @@
-pub fn lj(xj: &f64,yj: &f64, list_x: &Vec<f64>) -> Vec<f64>{
-    
+use crate::Point;
 
-    let mut prod: f64 = 1 as f64;
-    for xi in list_x{
-        if xi != xj{
-            prod *= xj-xi;
-        }
+fn add_polys(poly_a: &[f64], poly_b: &[f64]) -> Vec<f64>{
+    let max_len = poly_a.len().max(poly_b.len());
+    let mut result = vec![0.0; max_len];
+
+    for (i, &val) in poly_a.iter().enumerate() { result[i] += val; }
+    for (i, &val) in poly_b.iter().enumerate() { result[i] += val; }
+
+    result
+}
+
+fn multiply_poly_by_linear(poly: &[f64], root: f64) -> Vec<f64> {
+    //Multiplys a polynomial to a linear equation of form x-root=0
+
+    let mut result = vec![0.0; poly.len() + 1];
+
+    for (i, &val) in poly.iter().enumerate(){
+        result[i+1] += val;
+        result[i] -= val * root;
     }
 
-    let mut list_lj:Vec<f64> = Vec::new();
-    list_lj.push(1 as f64);
-    for xi in list_x{
-        if xi != xj{
-            let copy = xi*(-1 as f64);
-            let mut list_mul_copy = list_lj.clone();
-            for x in &mut list_mul_copy{
-                *x = *x*copy;
-            }
-            for ind in 1..list_lj.len(){
-                list_lj[ind] += list_mul_copy[ind-1];
-            }
-            list_lj.push(list_mul_copy[list_mul_copy.len()-1]);
-        }
-    }
-    let constanta = yj/prod;
-    for ind in 0..list_lj.len(){
-        list_lj[ind] *= constanta;
-    }
-    list_lj
+    result
 }
 
 
-pub fn sum_of_lists(list: &Vec<f64>, list2: &Vec<f64>) -> Vec<f64>{
-    let mut list1 = list.clone();
-    for ind in 0..list1.len(){
-        list1[ind] += list2[ind];
+pub fn lagrange_term(target_ind: usize, points: &[Point]) -> Vec<f64>{
+    let xj = points[target_ind].x;
+    let yj = points[target_ind].y;
+
+    let mut numerator_poly = vec![1.0];
+    let mut denominator = 1.0;
+
+    for (i, &point) in points.iter().enumerate(){
+        if i == target_ind {continue; }
+
+        numerator_poly = multiply_poly_by_linear(&numerator_poly, point.x);
+
+        denominator *= xj-point.x;
     }
-    list1.clone()
+
+    let scalar = yj/denominator;
+
+    numerator_poly.iter()
+        .map(|c| c * scalar)
+        .collect()
 }
 
-pub fn make_the_polynomial(vecx: &Vec<f64>, vecy: &Vec<f64>) -> Vec<f64> {
-    
-    let mut polynom: Vec<f64> = lj(&vecx[0], &vecy[0], &vecx);
-    for ind in 1..vecx.len(){
-        let xj = vecx[ind];
-        let yj = vecy[ind];
+pub fn make_the_polynomial(points: &[Point]) -> Vec<f64> {
 
-        let result = lj(&xj, &yj, &vecx);
-        polynom = sum_of_lists(&polynom, &result);
+    let mut result = vec![0.0; points.len()];
+
+    for (i, point) in points.iter().enumerate(){
+        let lj = lagrange_term(i, &points);
+        result = add_polys(&result, &lj)
     }
-
-    polynom
+    
+    result
 }
