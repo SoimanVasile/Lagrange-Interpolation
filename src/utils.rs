@@ -57,3 +57,11 @@ pub fn make_the_polynomial(points: &[Point]) -> Vec<f64> {
     
     result
 }
+
+pub fn evaluate_poly(coeffs: &[f64], x: f64) -> f64 {
+    let mut result = 0.0;
+    for &c in coeffs.iter().rev() {
+        result = result * x + c;
+    }
+    result
+}

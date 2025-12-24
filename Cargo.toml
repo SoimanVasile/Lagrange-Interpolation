@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 cargo-watch = "8.5.3"
+image = {version = "0.25.9", features = ["jpeg", "png", "webp"]}
