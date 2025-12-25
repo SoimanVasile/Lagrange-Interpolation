@@ -1,6 +1,7 @@
 use crate::Point;
 
 fn add_polys(poly_a: &[f64], poly_b: &[f64]) -> Vec<f64>{
+    // Adds 2 polynomials
     let max_len = poly_a.len().max(poly_b.len());
     let mut result = vec![0.0; max_len];
 
